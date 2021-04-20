@@ -1,0 +1,39 @@
+= Anime_test
+
+== Le sujet
+
+Le but est de créér une API qui représente des animes avec leurs épisodes et des utilisateur
+qui regarde ces animes
+
+Votre API devra permettre au _minimum_ de :
+
+- Créer un compte personnel en fournissant un username (unique), password, liste d'anime visionné.
+- Pouvoir ajouter, supprimer, modifier un anime. Un anime est composé d'un nom (unique), un nombre d'épisode,une image de cover,durré d'épisode
+, date de début.
+- Seul un utilisateur avec les droits d'administrations à le droit de modifier et supprimer un anime ou un utilisateur.
+
+.URIs de votre service
+[cols="1,1a,4a"]
+|===
+|URI |Méthode |Description
+
+|/animes|GET
+|Output: {"nom": "test","cover":"http://test.jpg","nb_episode":12,"durré_episode":24,"date_sortie":"2000-01-01"},
+code 200 OK,
+code 400 Bad request
+
+|/anime|POST
+|Input : {"nom": test,"cover":"http://test.jpg","nb_episode":12,"durré_episode":24,"date_sortie":"2000-01-01"}
+code 201 Created,
+code 400 Bad request
+code 409 Conflict
+
+|/animes/{nom}|PATCH
+|Input : {"cover":"http://test.jpg"}
+code 204 No-Content
+code 400 Bad request
+
+|/animes/{nom}|DELETE
+|code 204 No-Content
+code 404 Not-Found
+|===

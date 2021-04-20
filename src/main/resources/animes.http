@@ -1,0 +1,89 @@
+### Get de tous les animes de la "BD"
+GET http://localhost:8080/animes
+Content-Type: application/json
+
+> {%
+client.test("Request executed successfully", function() {
+  client.assert(response.status === 200, "Response status is not 200");
+});
+%}
+### Test sur une URL qui n'est pas dans l'API Rest
+GET http://localhost:8080/ani
+Content-Type: application/json
+
+> {%
+client.test("Request executed successfully", function() {
+  client.assert(response.status === 404, "Response status is not 404");
+});
+%}
+
+### Rajout d'un anime dans la "BD"
+POST http://localhost:8080/anime
+Content-Type: application/json
+
+{
+  "nom": "ShingekinoKyojin",
+  "cover":"http://ekladata.com/I2Pzw5GBtOE75ljjY2DHDdO9MkM.jpg",
+  "nb_episode":25,
+  "dure_episode":24,
+  "date_debut":"2013-04-07"
+}
+
+> {%
+client.global.set("snk", response.headers.valueOf("Location"))
+client.test("Request executed successfully", function() {
+  client.assert(response.status === 201, "Response status is not 201");
+});
+%}
+
+### Test du rajout une deuxième fois d'un anime qui à le même nom
+POST http://localhost:8080/anime
+Content-Type: application/json
+
+{
+  "nom": "ShingekinoKyojin",
+  "cover":"http://ekladata.com/I2Pzw5GBtOE75ljjY2DHDdO9MkM.jpg",
+  "nb_episode":25,
+  "dure_episode":24,
+  "date_debut":"2013-04-07"
+}
+
+> {%
+client.test("Request executed successfully", function() {
+  client.assert(response.status === 409, "Response status is not 409");
+});
+%}
+
+### Modification des données d'un anime (sauf son nom, car unique)
+PATCH {{snk}}
+Content-Type: application/json
+
+{
+  "date_debut": "2013-04-07"
+}
+
+> {%
+client.test("Request executed successfully", function() {
+  client.assert(response.status === 200, "Response status is not 200");
+});
+%}
+
+### Suppresion d'un anime de la "BD"
+DELETE {{snk}}
+Content-Type: application/json
+
+> {%
+client.test("Request executed successfully", function() {
+  client.assert(response.status === 204, "Response status is not 204");
+});
+%}
+### Suppression d'un anime qui n'existe pas
+DELETE {{snk}}
+Content-Type: application/json
+
+> {%
+client.test("Request executed successfully", function() {
+  client.assert(response.status === 404, "Response status is not 404");
+});
+%}
+
