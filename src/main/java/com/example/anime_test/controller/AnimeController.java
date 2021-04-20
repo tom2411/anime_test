@@ -1,7 +1,9 @@
 package com.example.anime_test.controller;
 
 import com.example.anime_test.exception.ModificationAnimeException;
+import com.example.anime_test.facade.AnimeFacade;
 import com.example.anime_test.modele.Anime;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -14,12 +16,15 @@ import java.util.HashMap;
 
 @RestController
 public class AnimeController {
-    private static final HashMap<String, Anime> animes = new HashMap<>();
+
+    @Autowired
+    AnimeFacade animeFacade;
+
 
     @GetMapping(value = "/animes",
             produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Collection<Anime>> getAnimes(){
-        return ResponseEntity.ok().body(this.animes.values());
+        return ResponseEntity.ok().body(animeFacade.getAnimes().values());
     }
 
     @PostMapping(value = "/anime",
@@ -29,10 +34,10 @@ public class AnimeController {
         if (anime.getNom().isBlank() || anime.getNom().isEmpty()){
             return ResponseEntity.badRequest().build();
         }
-        if (animes.containsKey(anime.getNom())){
+        if (animeFacade.dansBD(anime.getNom())){
             return ResponseEntity.status(HttpStatus.CONFLICT).build();
         }
-        animes.put(anime.getNom(), anime);
+        animeFacade.ajouterAnime(anime.getNom(),anime);
 
         URI location = ServletUriComponentsBuilder
                 .fromCurrentRequest().path("/{nom}")
@@ -46,14 +51,12 @@ public class AnimeController {
         if (nom.isEmpty() || nom.isBlank() ){
             return ResponseEntity.badRequest().build();
         }
-        if (!animes.containsKey(nom)){
+        if (!animeFacade.dansBD(nom)){
             return ResponseEntity.notFound().build();
         }
         try {
-            Anime src = animes.get(nom);
-            src.modifier(anime);
-            animes.replace(nom,src);
-            return ResponseEntity.ok().body(animes.get(nom));
+            Anime anime_mod = animeFacade.modifier(nom,anime);
+            return ResponseEntity.ok().body(anime_mod);
         } catch (ModificationAnimeException e) {
             throw new ModificationAnimeException();
         }
@@ -64,10 +67,10 @@ public class AnimeController {
         if (nom.isEmpty() || nom.isBlank()){
             return ResponseEntity.badRequest().build();
         }
-        if (animes.get(nom)==null){
+        if (animeFacade.getAnime(nom)==null){
             return ResponseEntity.notFound().build();
         }
-        animes.remove(nom);
+        animeFacade.deleteAnime(nom);
         return ResponseEntity.noContent().build();
     }
 }
